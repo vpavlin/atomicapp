@@ -14,6 +14,7 @@ class OpenShiftProvider(Provider):
     cli = "osc" 
     config_file = None
     template_data = None
+    kube_order = OrderedDict([("service", None), ("rc", None), ("pod", None)]) #FIXME
     def init(self):
         self.cli = find_executable(self.cli)
         if self.container and not self.cli:
@@ -44,11 +45,12 @@ class OpenShiftProvider(Provider):
             subprocess.check_call(cmd)
 
     def _processTemplate(self, path):
-        cmd = [self.cli, "--config=%s" % self.config_file, "process", "-f", path]
+        cmd = [self.cli, "--config=%s" % self.config_file, "process", "-f", path, "-l", "application=%s" % "nulecule"]
 
         name = "config-%s" % os.path.basename(path)
         output_path = os.path.join(self.path, name)
         if self.cli and not self.dryrun:
+            logger.debug(" ".join(cmd))
             output = subprocess.check_output(cmd)
             logger.debug("Writing processed template to %s", output_path)
             with open(output_path, "w") as fp:
@@ -74,24 +76,56 @@ class OpenShiftProvider(Provider):
 
         super(self.__class__, self).saveArtifact(path, data)
 
-    def deploy(self):
-        kube_order = OrderedDict([("service", None), ("rc", None), ("pod", None)]) #FIXME
+    def _resetReplicas(self, path):
+        data = anymarkup.parse_file(path)
+        name = data["id"]
+        cmd = [self.cli, "--config=%s" % self.config_file, "resize", "rc", name, "--replicas=0"]
+
+        if self.dryrun:
+            logger.info("DRY-RUN: %s", " ".join(cmd))
+        else:
+            subprocess.check_call(cmd)
+
+    def prepareOrder(self):
         for artifact in self.artifacts:
             data = None
             artifact_path = os.path.join(self.path, artifact)
             with open(artifact_path, "r") as fp:
-                data = anymarkup.parse(fp, force_types=None)
+                logger.debug(os.path.join(self.path, artifact))
+                data = anymarkup.parse(fp)
             if "kind" in data:
                 if data["kind"].lower() == "template":
                     logger.info("Processing template")
                     artifact = self._processTemplate(artifact_path)
-                kube_order[data["kind"].lower()] = artifact
+                self.kube_order[data["kind"].lower()] = artifact
             else:
-                raise ProviderFailedException("Malformed artifact file")
+                raise ProviderFailedException("Malformed kube file")
 
-        for artifact in kube_order:
-            if not kube_order[artifact]:
+    def undeploy(self):
+        logger.info("Undeploying from Kubernetes")
+        self.prepareOrder()
+
+        for kind, artifact in self.kube_order.iteritems():
+            if not self.kube_order[kind]:
                 continue
 
-            k8s_file = os.path.join(self.path, kube_order[artifact])
+            path = os.path.join(self.path, artifact)
+
+            if kind in ["ReplicationController", "rc", "replicationcontroller"]:
+                self._resetReplicas(path)
+
+            cmd = [self.cli, "--config=%s" % self.config_file, "delete", "-f", path]
+            if self.dryrun:
+                logger.info("DRY-RUN: %s", " ".join(cmd))
+            else:
+                subprocess.check_call(cmd)
+
+    def deploy(self):
+        self.prepareOrder()
+        
+        for artifact in self.kube_order:
+            if not self.kube_order[artifact]:
+                continue
+
+            k8s_file = os.path.join(self.path, self.kube_order[artifact])
             self._callCli(k8s_file)
