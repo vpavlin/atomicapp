@@ -176,7 +176,7 @@ class Run(object):
         dst_dir = os.path.join(self.utils.workdir, component)
         data = None
 
-        for artifact in artifacts[provider_name]:
+        for i, artifact in enumerate(artifacts[provider_name]):
             if "inherit" in artifact:
                 logger.debug("Inheriting from %s", artifact["inherit"])
                 for item in artifact["inherit"]:
@@ -184,19 +184,24 @@ class Run(object):
                         component, provider, item)
                     artifact_provider_list += inherited_artifacts
                 continue
-            artifact_path = self.utils.sanitizePath(artifact)
-            data = provider.loadArtifact(os.path.join(self.app_path, artifact_path))
-
-            logger.debug("Templating artifact %s/%s", self.app_path, artifact_path)
-            data = self._applyTemplate(data, component)
-
-            artifact_dst = os.path.join(dst_dir, artifact_path)
-
-            provider.saveArtifact(artifact_dst, data)
-
-            artifact_provider_list.append(artifact_path)
+            artifact_path = self.utils.getArtifactLocPath(artifact, component, i)
+            if os.path.isdir(artifact_path):
+                for f in os.listdir(artifact_path):
+                    self._processArtifact(os.path.join(artifact_path, f), component, provider, dst_dir, artifact_provider_list)
+            else:
+                self._processArtifact(artifact_path, component, provider, dst_dir, artifact_provider_list)
 
         return artifact_provider_list, dst_dir
+
+    def _processArtifact(self, artifact_path, component, provider, dst_dir, artifact_provider_list):
+        logger.debug("Path to artifact: %s", artifact_path)
+        data = provider.loadArtifact(os.path.join(self.app_path, artifact_path))
+
+        logger.debug("Templating artifact %s/%s", self.app_path, artifact_path)
+        data = self._applyTemplate(data, component)
+        artifact_dst = os.path.join(dst_dir, artifact_path)
+        provider.saveArtifact(artifact_dst, data)
+        artifact_provider_list.append(artifact_path)
 
     def _processComponent(self, component, graph_item):
         logger.debug(

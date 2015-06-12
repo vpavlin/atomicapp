@@ -24,6 +24,7 @@ import re
 import collections
 import anymarkup
 from distutils.spawn import find_executable
+import urllib2
 
 import logging
 
@@ -172,6 +173,49 @@ class Utils(object):
                         repeat = True
 
         return value
+
+    @staticmethod
+    def getFiles(uri, component, index = 0):
+
+        split = urllib2.urlparse.urlsplit(uri)
+        logger.debug(split)
+        path = Utils.getArtifactLocPath(uri, component, index)
+
+        if split.scheme == "file":
+            if os.path.isfile(path):
+                return [path]
+            elif os.path.isdir(path):
+                logger.debug(os.listdir(path))
+                return [os.path.join(path, f) for f in os.listdir(path)]
+            logger.debug("Artifact path: %s" % path)
+
+        response = urllib2.urlopen(uri)
+        if not response:
+            raise Exception("File could not be loaded: %s" % uri)
+
+        with open(path, "w") as fp:
+            fp.write(response.read())
+
+        return [path]
+
+    @staticmethod
+    def getArtifactLocPath(uri, component, index = 0):
+        artifact_dir = "artifacts"
+        split = urllib2.urlparse.urlsplit(uri)
+        if split.scheme == "file":
+            path = os.path.join(split.netloc, split.path)
+        else:
+            name = os.path.basename(split.path)
+            if not os.path.isdir(artifact_dir):
+                os.mkdir(artifact_dir)
+
+            component_dir = os.path.join(artifact_dir, component)
+            if not os.path.isdir(component_dir):
+                os.mkdir(component_dir)
+
+            path = os.path.join(component_dir, "%s-%s" % (index,name))
+
+        return path
 
     @staticmethod
     def update(old_dict, new_dict):

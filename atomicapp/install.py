@@ -163,14 +163,15 @@ class Install(object):
         logger.debug("App ID: %s", self.nulecule_base.app_id)
 
         self.nulecule_base.checkSpecVersion()
-        printStatus("Checking all artifacts")
-        self.nulecule_base.checkAllArtifacts()
 
         printStatus("Loading Nulecule file.")
         if not self.nulecule_base.nodeps:
             logger.info("Installing dependencies for %s", self.nulecule_base.app_id)
             self.answers_file_values = self._installDependencies()
             printStatus("All dependencies installed successfully.")
+
+        printStatus("Checking all artifacts")
+        self.nulecule_base.checkAllArtifacts()
 
         logger.debug(self.answers_file_values)
         answerContent = self.nulecule_base.loadAnswers(self.answers_file_values)
@@ -194,6 +195,7 @@ class Install(object):
                     component, skip_asking=True)
                 logger.debug("Component %s is part of the app", component)
                 logger.debug("Values: %s", values)
+                self.nulecule_base.installArtifacts(component)
                 continue
 
             logger.info("Component %s is external dependency", component)

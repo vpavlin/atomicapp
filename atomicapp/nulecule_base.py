@@ -277,7 +277,19 @@ class Nulecule_Base(object):
 
         return None
 
-    def checkArtifacts(self, component, check_provider=None):
+    def installArtifacts(self, component, artifacts = None):
+        if not artifacts:
+            artifacts = self.getArtifacts(component)
+
+        result = []
+        for provider, artifact_list in artifacts.iteritems():
+            for i, artifact in enumerate(artifact_list):
+                result += (Utils.getFiles(artifact, component, i))
+
+        logger.debug(result)
+        return result
+
+    def checkArtifacts(self, component, check_provider = None):
         checked_providers = []
         artifacts = self.getArtifacts(component)
         if not artifacts:
@@ -290,11 +302,12 @@ class Nulecule_Base(object):
                 continue
 
             logger.debug("Provider: %s", provider)
-            for artifact in artifact_list:
+            for i, artifact in enumerate(artifact_list):
                 if "inherit" in artifact:
                     self._checkInherit(component, artifact["inherit"], checked_providers)
                     continue
-                path = os.path.join(self.target_path, Utils.sanitizePath(artifact))
+
+                path = os.path.join(self.target_path, Utils.getArtifactLocPath(artifact, component, i))
                 if os.path.isfile(path):
                     printStatus("Artifact %s: OK." % (artifact))
                 else:

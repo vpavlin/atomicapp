@@ -118,6 +118,7 @@ class KubernetesProvider(Provider):
         process is valid.
         """
         for artifact in self.artifacts:
+            logger.debug("Artifact to deploy: %s", artifact)
             data = None
             with open(os.path.join(self.path, artifact), "r") as fp:
                 logger.debug(os.path.join(self.path, artifact))
