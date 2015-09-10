@@ -23,10 +23,10 @@ graph:
         default: MySQLPass
     artifacts:
       kubernetes:
-        - file://artifacts/kubernetes/mariadb-pod.yaml
-        - file://artifacts/kubernetes/mariadb-service.yaml
+        - file:artifacts/kubernetes/mariadb-pod.yaml
+        - file:artifacts/kubernetes/mariadb-service.yaml
       openshift:
         - inherit:
           - kubernetes
       docker:
-        - file://artifacts/docker/mariadb-app-pod_run
+        - file:artifacts/docker/mariadb-app-pod_run

@@ -12,9 +12,9 @@ graph:
   - name: wordpress
     artifacts:
       kubernetes:
-        - file://artifacts/kubernetes/wordpress-pod.yaml
-        - file://artifacts/kubernetes/wordpress-service.yaml
+        - file:artifacts/kubernetes/wordpress-pod.yaml
+        - file:artifacts/kubernetes/wordpress-service.yaml
       openshift:
-        - file://artifacts/openshift/volume.yaml
-        - file://artifacts/openshift/service.yaml
-        - file://artifacts/openshift/pod.yaml
+        - file:artifacts/openshift/volume.yaml
+        - file:artifacts/openshift/service.yaml
+        - file:artifacts/openshift/pod.yaml

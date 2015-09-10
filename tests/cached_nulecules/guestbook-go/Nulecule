@@ -14,7 +14,7 @@ graph:
         default: kubernetes/guestbook:v2
     artifacts:
       kubernetes:
-        - file://artifacts/kubernetes/guestbook-controller.json
-        - file://artifacts/kubernetes/guestbook-service.json
+        - file:artifacts/kubernetes/guestbook-controller.json
+        - file:artifacts/kubernetes/guestbook-service.json
   - name: redis-centos7-atomicapp
     source: docker://projectatomic/redis-centos7-atomicapp

@@ -57,13 +57,11 @@ class Install(object):
             app = self._loadApp(app)
         else:
             logger.info("App name is %s, will be populated to %s", app, target_path)
+            self.nulecule_base.app_path = os.getcwd()
 
         printStatus("Loading app %s ." % app)
         if not target_path:
-            if self.nulecule_base.app_path:
-                self.nulecule_base.target_path = self.nulecule_base.app_path
-            else:
-                self.nulecule_base.target_path = os.getcwd()
+            self.nulecule_base.target_path = self.nulecule_base.app_path
 
         self.utils = Utils(self.nulecule_base.target_path)
 

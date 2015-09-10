@@ -28,7 +28,7 @@ import urllib2
 
 import logging
 
-from constants import APP_ENT_PATH, EXTERNAL_APP_DIR, WORKDIR, HOST_DIR
+from constants import APP_ENT_PATH, EXTERNAL_APP_DIR, WORKDIR, HOST_DIR, ARTIFACTS_DIR
 
 __all__ = ('Utils')
 
@@ -175,11 +175,13 @@ class Utils(object):
         return value
 
     @staticmethod
-    def getFiles(uri, component, index = 0):
+    def getFiles(uri, component, app_path = None, index = 0):
 
         split = urllib2.urlparse.urlsplit(uri)
+        if app_path:
+            split = split._replace(netloc=os.path.join(app_path, split.netloc.lstrip("/")))
         logger.debug(split)
-        path = Utils.getArtifactLocPath(uri, component, index)
+        path = Utils.getArtifactLocPath(uri, component, app_path = app_path, index = index)
 
         if split.scheme == "file":
             if os.path.isfile(path):
@@ -188,8 +190,9 @@ class Utils(object):
                 logger.debug(os.listdir(path))
                 return [os.path.join(path, f) for f in os.listdir(path)]
             logger.debug("Artifact path: %s" % path)
-
-        response = urllib2.urlopen(uri)
+        
+        print(uri)
+        response = urllib2.urlopen(urllib2.urlparse.urlunsplit(split))
         if not response:
             raise Exception("File could not be loaded: %s" % uri)
 
@@ -199,11 +202,13 @@ class Utils(object):
         return [path]
 
     @staticmethod
-    def getArtifactLocPath(uri, component, index = 0):
-        artifact_dir = "artifacts"
+    def getArtifactLocPath(uri, component, app_path = None, index = 0):
+        artifact_dir = ARTIFACTS_DIR
         split = urllib2.urlparse.urlsplit(uri)
         if split.scheme == "file":
-            path = os.path.join(split.netloc, split.path)
+            if not app_path:
+                app_path = ""
+            path = os.path.join(app_path, split.netloc, split.path.lstrip("/"))
         else:
             name = os.path.basename(split.path)
             if not os.path.isdir(artifact_dir):

@@ -10,15 +10,15 @@ graph:
   - name: redis
     artifacts:
       kubernetes:
-        - file://artifacts/kubernetes/redis-rc.json
-        - file://artifacts/kubernetes/redis-service.json
+        - file:artifacts/kubernetes/redis-rc.json
+        - file:artifacts/kubernetes/redis-service.json
   - name: postgresql
     artifacts:
       kubernetes:
-        - file://artifacts/kubernetes/postgres-rc.json
-        - file://artifacts/kubernetes/postgres-service.json
+        - file:artifacts/kubernetes/postgres-rc.json
+        - file:artifacts/kubernetes/postgres-service.json
   - name: gitlab
     artifacts:
       kubernetes:
-        - file://artifacts/kubernetes/gitlab-rc.json
-        - file://artifacts/kubernetes/gitlab-http-service.json
+        - file:artifacts/kubernetes/gitlab-rc.json
+        - file:artifacts/kubernetes/gitlab-http-service.json

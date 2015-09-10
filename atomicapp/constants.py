@@ -27,6 +27,7 @@ __ATOMICAPPVERSION__ = '0.1.3'
 __NULECULESPECVERSION__ = '0.0.2'
 
 EXTERNAL_APP_DIR = "external"
+ARTIFACTS_DIR = "artifacts" # Used as a destination when pulling remote artifact
 GLOBAL_CONF = "general"
 APP_ENT_PATH = "application-entity"
 

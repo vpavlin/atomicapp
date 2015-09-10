@@ -95,6 +95,7 @@ class Run(object):
             dryrun=dryrun,
             file_format=answers_format,
             cli_provider=self.cli_provider)
+        self.nulecule_base.app_path = self.app_path
         if "ask" in kwargs:
             self.nulecule_base.ask = kwargs["ask"]
 
@@ -184,7 +185,7 @@ class Run(object):
                         component, provider, item)
                     artifact_provider_list += inherited_artifacts
                 continue
-            artifact_path = self.utils.getArtifactLocPath(artifact, component, i)
+            artifact_path = self.utils.getArtifactLocPath(artifact, component, self.app_path, i)
             if os.path.isdir(artifact_path):
                 for f in os.listdir(artifact_path):
                     self._processArtifact(os.path.join(artifact_path, f), component, provider, dst_dir, artifact_provider_list)

@@ -10,12 +10,12 @@
     "spec": {
         "containers": [
             {
-                "image": "$image",
+                "image": "centos/httpd",
                 "name": "helloapache",
                 "ports": [
                     {
                         "containerPort": 80,
-                        "hostPort": $hostport,
+                        "hostPort": 80,
                         "protocol": "TCP"
                     }
                 ]
