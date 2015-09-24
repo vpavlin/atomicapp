@@ -121,7 +121,6 @@ class Utils(object):
 
     @staticmethod
     def isExternal(graph_item):
-        logger.debug(graph_item)
         if "artifacts" in graph_item:
             return False
 
